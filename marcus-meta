@@ -1,0 +1,1 @@
+docker compose run --profile maintenance signature-migration-crondocker compose --profile maintenance run --rm signature-migration-cron
