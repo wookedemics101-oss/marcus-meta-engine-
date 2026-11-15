@@ -1,4 +1,4 @@
-"""Structural lineage graph validation and deterministic hash recording.
+"""Structural lineage validation and deterministic hash recording.
 
 Hashes use compact, sorted Python JSON serialization, not RFC 8785 JCS. A hash
 alone does not prove source truth or transformation correctness.
@@ -27,6 +27,12 @@ def _json_bytes(payload: Mapping[str, Any]) -> bytes:
 
 
 def validate_lineage_graph(graph: Mapping[str, Any]) -> list[str]:
+    """Validate graph structure without claiming digest/source verification.
+
+    Identifier type and UUID syntax are checked before set operations, so
+    malformed list/dict identifiers produce errors instead of TypeError.
+    Cycle detection is iterative and does not consume Python call stack depth.
+    """
     errors: list[str] = []
     nodes, edges = graph.get("nodes"), graph.get("edges")
     if not isinstance(nodes, list) or not isinstance(edges, list):
@@ -45,11 +51,14 @@ def validate_lineage_graph(graph: Mapping[str, Any]) -> list[str]:
                 uuid.UUID(node_id)
             except (ValueError, AttributeError):
                 errors.append(f"nodes[{index}].node_id is invalid")
+                continue
             if node_id in node_ids:
                 errors.append(f"duplicate node id: {node_id}")
             node_ids.add(node_id)
         digest = node.get("sha256_digest")
-        if not isinstance(digest, str) or not _DIGEST_RE.fullmatch(digest):
+        # Hex digest syntax check only: no payload bytes are available here for
+        # recomputation, and uppercase is accepted as valid hexadecimal syntax.
+        if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-fA-F]{64}", digest):
             errors.append(f"nodes[{index}].sha256_digest is invalid")
 
     edge_ids: set[str] = set()
@@ -66,6 +75,7 @@ def validate_lineage_graph(graph: Mapping[str, Any]) -> list[str]:
                 uuid.UUID(edge_id)
             except (ValueError, AttributeError):
                 errors.append(f"edges[{index}].edge_id is invalid")
+                continue
             if edge_id in edge_ids:
                 errors.append(f"duplicate edge id: {edge_id}")
             edge_ids.add(edge_id)
@@ -79,21 +89,27 @@ def validate_lineage_graph(graph: Mapping[str, Any]) -> list[str]:
         if source_ok and target_ok:
             adjacency[source].append(target)
 
-    # Three-color depth-first traversal detects cycles in the directed graph.
+    # Iterative three-color DFS. Stack frames retain each node's child iterator.
     colors = {node_id: 0 for node_id in node_ids}
     cyclic = False
-    def visit(node_id: str) -> None:
-        nonlocal cyclic
-        colors[node_id] = 1
-        for target in adjacency[node_id]:
-            if colors[target] == 1:
+    for root in node_ids:
+        if colors[root] != 0:
+            continue
+        colors[root] = 1
+        stack: list[tuple[str, Any]] = [(root, iter(adjacency[root]))]
+        while stack:
+            current, children = stack[-1]
+            try:
+                child = next(children)
+            except StopIteration:
+                colors[current] = 2
+                stack.pop()
+                continue
+            if colors[child] == 1:
                 cyclic = True
-            elif colors[target] == 0:
-                visit(target)
-        colors[node_id] = 2
-    for node_id in node_ids:
-        if colors[node_id] == 0:
-            visit(node_id)
+            elif colors[child] == 0:
+                colors[child] = 1
+                stack.append((child, iter(adjacency[child])))
     if cyclic:
         errors.append("lineage graph contains a directed cycle")
     return errors
@@ -124,12 +140,14 @@ class HermesLineageLogger:
     def digest_for_node(self, node_id: str) -> str:
         try:
             return self._payload_digests[node_id]
-        except KeyError as exc:
+        except (KeyError, TypeError) as exc:
             raise ValueError("unknown lineage node") from exc
 
     def add_edge(self, source_node_id: str, target_node_id: str, operation: str,
                  parameters: Mapping[str, Any] | None = None, status: str = "UNVERIFIED") -> str:
         node_ids = {node["node_id"] for node in self.nodes}
+        if not isinstance(source_node_id, str) or not isinstance(target_node_id, str):
+            raise ValueError("edge endpoint identifiers must be strings")
         if source_node_id not in node_ids or target_node_id not in node_ids:
             raise ValueError("both edge endpoints must refer to existing nodes")
         if not isinstance(operation, str) or not operation.strip():
