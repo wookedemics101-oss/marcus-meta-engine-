@@ -1,9 +1,4 @@
-"""Opt-in, loopback-only OSC 1.0 bundle dispatcher.
-
-This prototype sends only when explicitly enabled. UDP send success is not
-confirmation that REAPER received or applied a message. The digest is audit
-metadata and is not embedded in OSC or independently verified here.
-"""
+"""Opt-in, loopback-only OSC 1.0 bundle dispatcher with explicit lifecycle."""
 from __future__ import annotations
 
 import ipaddress
@@ -48,10 +43,9 @@ def _encode_message(packet: Mapping[str, Any], allowed: frozenset[str]) -> bytes
     return _osc_string(address) + _osc_string(tags) + encoded
 
 
-def serialize_osc_bundle(
-    packets: Iterable[Mapping[str, Any]], allowed_addresses: Iterable[str] = _ALLOWED
-) -> bytes:
-    """Return a standards-framed OSC 1.0 bundle using the immediate timetag."""
+def serialize_osc_bundle(packets: Iterable[Mapping[str, Any]],
+                         allowed_addresses: Iterable[str] = _ALLOWED) -> bytes:
+    """Encode a standard OSC bundle with immediate timetag and length prefixes."""
     packet_list = list(packets)
     if not packet_list or len(packet_list) > 64:
         raise ValueError("Bundle must contain between 1 and 64 messages")
@@ -67,7 +61,7 @@ def serialize_osc_bundle(
 
 
 class EdmoniaOSCDispatcher:
-    """Send OSC to IPv4 loopback only; transmission is disabled by default."""
+    """Send only to 127.0.0.1; disabled by default. No receiver ACK is implied."""
     def __init__(self, reaper_ip: str = "127.0.0.1", reaper_port: int = 8000,
                  *, enabled: bool = False, timeout_seconds: float = 1.0) -> None:
         try:
@@ -82,8 +76,11 @@ class EdmoniaOSCDispatcher:
             raise ValueError("timeout_seconds must be finite and positive")
         self.reaper_ip, self.reaper_port = str(address), reaper_port
         self.enabled, self.timeout_seconds = enabled, timeout_seconds
+        self._closed = False
 
     def transmit_to_reaper(self, processing_result: Mapping[str, Any]) -> dict[str, Any]:
+        if self._closed:
+            raise RuntimeError("Dispatcher is closed")
         if not self.enabled:
             raise PermissionError("OSC transmission is disabled; explicitly opt in")
         if processing_result.get("status") != "PROCESSED":
@@ -101,7 +98,7 @@ class EdmoniaOSCDispatcher:
         if sent != len(data):
             raise OSError("Incomplete UDP datagram send")
         return {
-            "sent": True,
+            "status": "SENT",
             "destination": f"{self.reaper_ip}:{self.reaper_port}",
             "message_count": len(packets),
             "byte_count": sent,
@@ -109,3 +106,7 @@ class EdmoniaOSCDispatcher:
             "digest_verified": False,
             "receiver_acknowledged": False,
         }
+
+    def close(self) -> None:
+        """Close lifecycle; sockets are per-send and already closed after each call."""
+        self._closed = True
