@@ -1,0 +1,24 @@
+{
+  "registry_version": "1.0.0",
+  "directive_id": "MARCUS-DIR-001",
+  "issue_date": "2026-11-15",
+  "status": "issued_adoption_directed",
+  "project_scope": "all_marcus_subsystems",
+  "effective_for_project": true,
+  "runtime_activation": "pending_subsystem_confirmation",
+  "governing_statement": "M.A.R.C.U.S. IS A DISCOVERY-DRIVEN SYSTEM.",
+  "operating_principle": "BUILD -> OBSERVE -> ANALYZE -> EXPERIMENT -> TEST -> LEARN -> IMPROVE -> CONTINUE",
+  "priority_hierarchy": [
+    "preservation_of_scientific_meaning",
+    "continuous_project_advancement",
+    "evidence_integrity_and_transparent_uncertainty",
+    "reproducibility_and_traceability",
+    "independent_experimentation_and_discovery",
+    "cross_subsystem_interoperability",
+    "creative_development_and_optimization",
+    "continuous_improvement"
+  ],
+  "source_document": "docs/MARCUS_DIRECTIVE_001.md",
+  "schema_ref": "schemas/marcus.directive-registry.v1.schema.json",
+  "activation_register_ref": "config/subsystem-activation-register.json"
+}

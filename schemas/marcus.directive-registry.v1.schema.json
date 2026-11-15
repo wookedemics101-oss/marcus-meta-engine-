@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/wookedemics101-oss/marcus-meta-engine-/blob/main/schemas/marcus.directive-registry.v1.schema.json",
+  "title": "M.A.R.C.U.S. Directive Registry v1",
+  "description": "Machine-readable record of issued project directives and their current adoption status.",
+  "type": "object",
+  "required": [
+    "registry_version",
+    "directive_id",
+    "issue_date",
+    "status",
+    "project_scope",
+    "effective_for_project",
+    "runtime_activation",
+    "governing_statement",
+    "operating_principle",
+    "priority_hierarchy",
+    "source_document",
+    "schema_ref",
+    "activation_register_ref"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "registry_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "directive_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "issue_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "issued",
+        "issued_adoption_directed",
+        "adopted",
+        "superseded"
+      ]
+    },
+    "project_scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "effective_for_project": {
+      "type": "boolean"
+    },
+    "runtime_activation": {
+      "type": "string",
+      "enum": [
+        "pending_subsystem_confirmation",
+        "partial",
+        "fully_confirmed"
+      ]
+    },
+    "governing_statement": {
+      "type": "string",
+      "minLength": 1
+    },
+    "operating_principle": {
+      "type": "string",
+      "minLength": 1
+    },
+    "priority_hierarchy": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "source_document": {
+      "type": "string",
+      "minLength": 1
+    },
+    "schema_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "activation_register_ref": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

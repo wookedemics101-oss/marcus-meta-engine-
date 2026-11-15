@@ -1,0 +1,107 @@
+{
+  "registry_version": "1.0.0",
+  "directive_id": "MARCUS-DIR-001",
+  "status": "directive_received_and_project_adopted",
+  "activation_policy": "runtime_activation_requires_independent_confirmation",
+  "subsystems": [
+    {
+      "subsystem_id": "cosmic_daily_calibration",
+      "name": "COSMIC DAILY CALIBRATION",
+      "directive_received": true,
+      "operating_principles_adopted": true,
+      "project_state": "active_architecture",
+      "connection_status": "not_confirmed",
+      "capability_status": "documented_and_ready_for_independent_work",
+      "execution_status": "project_level_work_only",
+      "runtime_activation": "pending_confirmation"
+    },
+    {
+      "subsystem_id": "twelve_family_interstellar_archive",
+      "name": "12-FAMILY INTERSTELLAR ARCHIVE",
+      "directive_received": true,
+      "operating_principles_adopted": true,
+      "project_state": "active_architecture",
+      "connection_status": "not_confirmed",
+      "capability_status": "documented_and_ready_for_independent_work",
+      "execution_status": "project_level_work_only",
+      "runtime_activation": "pending_confirmation"
+    },
+    {
+      "subsystem_id": "calendar_concordance",
+      "name": "27-CALENDAR CONCORDANCE",
+      "directive_received": true,
+      "operating_principles_adopted": true,
+      "project_state": "active_architecture",
+      "connection_status": "not_confirmed",
+      "capability_status": "documented_and_ready_for_independent_work",
+      "execution_status": "project_level_work_only",
+      "runtime_activation": "pending_confirmation"
+    },
+    {
+      "subsystem_id": "hermes_data_plane",
+      "name": "H.E.R.M.E.S. DATA PLANE",
+      "directive_received": true,
+      "operating_principles_adopted": true,
+      "project_state": "active_architecture",
+      "connection_status": "not_confirmed",
+      "capability_status": "documented_and_ready_for_independent_work",
+      "execution_status": "project_level_work_only",
+      "runtime_activation": "pending_confirmation"
+    },
+    {
+      "subsystem_id": "drsa_cosmic_calibration_analysis",
+      "name": "D.R.S.A. / COSMIC CALIBRATION ANALYSIS",
+      "directive_received": true,
+      "operating_principles_adopted": true,
+      "project_state": "active_architecture",
+      "connection_status": "not_confirmed",
+      "capability_status": "documented_and_ready_for_independent_work",
+      "execution_status": "project_level_work_only",
+      "runtime_activation": "pending_confirmation"
+    },
+    {
+      "subsystem_id": "musical_sonification_engine",
+      "name": "MUSICAL SONIFICATION ENGINE",
+      "directive_received": true,
+      "operating_principles_adopted": true,
+      "project_state": "active_architecture",
+      "connection_status": "not_confirmed",
+      "capability_status": "documented_and_ready_for_independent_work",
+      "execution_status": "project_level_work_only",
+      "runtime_activation": "pending_confirmation"
+    },
+    {
+      "subsystem_id": "reboot_composition_system",
+      "name": "REBOOT / COMPOSITION SYSTEM",
+      "directive_received": true,
+      "operating_principles_adopted": true,
+      "project_state": "active_architecture",
+      "connection_status": "not_confirmed",
+      "capability_status": "documented_and_ready_for_independent_work",
+      "execution_status": "project_level_work_only",
+      "runtime_activation": "pending_confirmation"
+    },
+    {
+      "subsystem_id": "validation_and_fred",
+      "name": "VALIDATION AND F.R.E.D.",
+      "directive_received": true,
+      "operating_principles_adopted": true,
+      "project_state": "active_architecture",
+      "connection_status": "not_confirmed",
+      "capability_status": "documented_and_ready_for_independent_work",
+      "execution_status": "project_level_work_only",
+      "runtime_activation": "pending_confirmation"
+    },
+    {
+      "subsystem_id": "repository_and_archive_infrastructure",
+      "name": "REPOSITORY AND ARCHIVE INFRASTRUCTURE",
+      "directive_received": true,
+      "operating_principles_adopted": true,
+      "project_state": "active_architecture",
+      "connection_status": "not_confirmed",
+      "capability_status": "documented_and_ready_for_independent_work",
+      "execution_status": "project_level_work_only",
+      "runtime_activation": "pending_confirmation"
+    }
+  ]
+}
