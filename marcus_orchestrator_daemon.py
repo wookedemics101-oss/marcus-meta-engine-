@@ -1,14 +1,12 @@
-"""Injected-dependency telemetry-to-OSC dispatch daemon prototype.
+"""One-way, injected-feed telemetry-to-OSC dispatcher prototype.
 
-This is a one-way dispatch pipeline, not a closed loop. It has no default live
-sensor provider and does not start when imported. Feed, clock, dispatcher,
-lineage logger, and persistence path are injectable for deterministic testing.
+No live sensor or daemon starts by default. OSC transmission is delegated to an
+explicitly enabled loopback dispatcher. UDP SENT means OS-level acceptance only;
+it is not receiver confirmation and this module has no feedback path.
 """
 from __future__ import annotations
 
 import math
-import threading
-import time
 from pathlib import Path
 from typing import Any, Callable, Mapping
 
@@ -17,14 +15,20 @@ from hermes_lineage import HermesLineageLogger
 
 
 class MarcusOrchestratorDaemon:
-    def __init__(self, feed_provider: Callable[[], Mapping[str, Any]] | None = None,
-                 *, source_kind: str = "SIMULATED", poll_interval_sec: float = 2.0,
-                 master_pitch_hz: float = 432.0, tet_divisions: int = 20,
-                 dispatcher: EdmoniaOSCDispatcher | None = None,
-                 lineage_logger: HermesLineageLogger | None = None,
-                 clock: Callable[[], float] = time.monotonic,
-                 lineage_path: str | Path | None = None) -> None:
-        if not math.isfinite(poll_interval_sec) or poll_interval_sec <= 0:
+    def __init__(
+        self,
+        telemetry_provider: Callable[[], Mapping[str, Any]] | None = None,
+        *,
+        source_kind: str = "SIMULATED",
+        poll_interval_sec: float = 2.0,
+        reaper_port: int = 8000,
+        master_pitch_hz: float = 432.0,
+        tet_divisions: int = 20,
+        dispatcher: EdmoniaOSCDispatcher | None = None,
+        lineage_logger: HermesLineageLogger | None = None,
+        lineage_path: str | Path | None = None,
+    ) -> None:
+        if isinstance(poll_interval_sec, bool) or not isinstance(poll_interval_sec, (int, float)) or not math.isfinite(poll_interval_sec) or poll_interval_sec <= 0:
             raise ValueError("poll_interval_sec must be finite and positive")
         if source_kind not in {"SIMULATED", "INJECTED", "REAL_UNVERIFIED"}:
             raise ValueError("source_kind must explicitly identify feed provenance")
@@ -32,108 +36,142 @@ class MarcusOrchestratorDaemon:
             raise ValueError("master_pitch_hz must be finite and positive")
         if isinstance(tet_divisions, bool) or not isinstance(tet_divisions, int) or tet_divisions < 1:
             raise ValueError("tet_divisions must be a positive integer")
-        self.feed_provider = feed_provider
-        self.source_kind = source_kind if feed_provider is not None else "NO_FEED_CONFIGURED"
-        self.poll_interval = poll_interval_sec
-        self.master_pitch_hz = master_pitch_hz
+        self.telemetry_provider = telemetry_provider
+        self.source_kind = source_kind if telemetry_provider is not None else "NO_FEED_CONFIGURED"
+        self.poll_interval = float(poll_interval_sec)
+        self.master_pitch_hz = float(master_pitch_hz)
         self.tet_divisions = tet_divisions
         self.dispatcher = dispatcher
         self.lineage_logger = lineage_logger or HermesLineageLogger()
-        self.clock = clock
         self.lineage_path = Path(lineage_path) if lineage_path is not None else None
-        self._stop_event = threading.Event()
-        self._running = False
+        self.is_running = False
 
     def process_cycle(self) -> dict[str, Any]:
-        """Fetch one injected record, map it, record lineage, optionally dispatch."""
-        if self.feed_provider is None:
+        """Process one provider result; never synthesizes or fetches a live feed."""
+        if self.telemetry_provider is None:
             return {"status": "NO_FEED", "source_kind": self.source_kind}
         try:
-            raw = self.feed_provider()
+            raw = self.telemetry_provider()
         except Exception as exc:
             return {"status": "FEED_ERROR", "source_kind": self.source_kind,
-                    "error": type(exc).__name__}
+                    "error_type": type(exc).__name__}
         if not isinstance(raw, Mapping):
-            return {"status": "QUARANTINED", "reason": "feed provider must return a mapping"}
+            return {"status": "QUARANTINED", "reason": "provider result must be a mapping"}
+
         missingness = raw.get("missingness_state", "UNKNOWN")
+        if missingness not in {"VALID", "MEASURED_ZERO", "NON_DETECTION", "UNAVAILABLE", "UNKNOWN"}:
+            return {"status": "QUARANTINED", "reason": "unrecognized missingness classification"}
         if missingness not in {"VALID", "MEASURED_ZERO"}:
             return {"status": "QUARANTINED", "reason": f"missingness state is {missingness}"}
         if raw.get("parameter") != "barometric_pressure" or raw.get("unit") != "hPa":
             return {"status": "QUARANTINED", "reason": "only barometric_pressure in hPa is supported"}
         value = raw.get("value")
-        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
-            return {"status": "QUARANTINED", "reason": "value must be finite numeric telemetry"}
-        if (missingness == "MEASURED_ZERO") != (value == 0):
-            return {"status": "QUARANTINED", "reason": "value and missingness classification conflict"}
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            return {"status": "INVALID_MEASUREMENT", "reason": "value must be numeric"}
+        if not math.isfinite(value):
+            return {"status": "INVALID_MEASUREMENT", "reason": "value must be finite"}
+        if missingness == "MEASURED_ZERO" and value != 0:
+            return {"status": "QUARANTINED", "reason": "MEASURED_ZERO requires a zero value"}
+        if missingness == "VALID" and value == 0:
+            return {"status": "QUARANTINED", "reason": "zero must be explicitly classified as MEASURED_ZERO"}
 
         input_record = {
             "parameter": "barometric_pressure", "value": value, "unit": "hPa",
             "missingness_state": missingness, "source_kind": self.source_kind,
             "source_reference": raw.get("source_reference"),
         }
-        input_node_id = self.lineage_logger.add_node("IZORA", "TELEMETRY_ENVELOPE", input_record)
-        input_digest = self.lineage_logger.digest_for_node(input_node_id)
+        input_node_id, input_digest = self.lineage_logger.add_node(
+            "IZORA", "TELEMETRY_ENVELOPE", input_record
+        )
 
-        # Provisional engineering mapping; bounds, clamp, and Python round() are explicit.
+        # Explicit provisional mapping contract. These are engineering choices,
+        # not established atmospheric laws or production authorization.
         pressure_min, pressure_max = 870.0, 1085.0
+        if value < pressure_min:
+            range_status = "CLAMPED_LOW"
+        elif value > pressure_max:
+            range_status = "CLAMPED_HIGH"
+        else:
+            range_status = "IN_RANGE"
         normalized = max(0.0, min(1.0, (float(value) - pressure_min) / (pressure_max - pressure_min)))
         tet_index = int(round(normalized * (self.tet_divisions - 1)))
         frequency = self.master_pitch_hz * (2.0 ** (tet_index / self.tet_divisions))
         mapping_parameters = {
             "pressure_range_hpa": [pressure_min, pressure_max],
-            "out_of_range_policy": "clamp",
+            "out_of_range_policy": "clamp_and_report_range_status",
             "rounding_rule": "Python_round_ties_to_even",
             "master_pitch_hz": self.master_pitch_hz,
             "tet_divisions": self.tet_divisions,
-            "formula": "f = master_pitch_hz * 2 ** (tet_index / tet_divisions)",
+            "frequency_formula": "master_pitch_hz * 2 ** (tet_index / tet_divisions)",
+            "mapping_status": range_status,
             "interpretation": "provisional_artistic_mapping_not_atmospheric_law",
         }
-        output_payload = {"tet_index": tet_index, "frequency_hz": frequency,
-                          "mapping_parameters": mapping_parameters}
-        output_node_id = self.lineage_logger.add_node("EDMONIA", "SONIFICATION_STREAM", output_payload)
-        self.lineage_logger.add_edge(input_node_id, output_node_id,
-                                     "EDMONIA_PRESSURE_TO_20TET_MAPPING", mapping_parameters)
+        output_payload = {
+            "tet_index": tet_index, "frequency_hz": frequency,
+            "mapping_parameters": mapping_parameters,
+        }
+        output_node_id, _output_digest = self.lineage_logger.add_node(
+            "EDMONIA", "SONIFICATION_STREAM", output_payload
+        )
+        self.lineage_logger.add_edge(
+            input_node_id, output_node_id, "EDMONIA_PRESSURE_TO_20TET_MAPPING",
+            mapping_parameters, status="UNVERIFIED",
+        )
+
         result: dict[str, Any] = {
             "status": "PROCESSED", "source_kind": self.source_kind,
+            "range_status": range_status,
             "sha256_digest": input_digest,
-            "digest_semantics": "sha256_of_deterministic_compact_sorted_python_json_not_rfc8785_jcs",
+            "digest_semantics": "deterministic_compact_sorted_python_json_not_rfc8785_jcs",
             "jcs_canonicalized": False,
             "input_node_id": input_node_id, "output_node_id": output_node_id,
             "tet_index": tet_index, "frequency_hz": frequency,
             "mapping_parameters": mapping_parameters,
             "osc_packets": [
                 {"address": "/edmonia/synth/tet_index", "value": tet_index},
-                {"address": "/edmonia/synth/tet_frequency", "value": frequency},
+                {"address": "/edmonia/synth/tet_frequency", "value": float(frequency)},
             ],
-            "delivery_status": "NOT_SENT",
-            "receiver_confirmed": False,
+            "delivery_status": "NOT_SENT", "receiver_confirmed": False,
+            "lineage_validation_errors": self.lineage_logger.validate(),
         }
         if self.dispatcher is not None and self.dispatcher.enabled:
-            receipt = self.dispatcher.transmit_to_reaper(result)
-            result["delivery_status"] = receipt["status"]
-            result["receiver_confirmed"] = receipt["receiver_acknowledged"]
+            try:
+                receipt = self.dispatcher.transmit_to_reaper(result)
+                result["delivery_status"] = receipt.get("status", "SENT")
+                result["receiver_confirmed"] = bool(receipt.get("receiver_acknowledged", False))
+            except (OSError, ValueError, RuntimeError) as exc:
+                result["delivery_status"] = "SEND_FAILED"
+                result["dispatch_error_type"] = type(exc).__name__
+
         if self.lineage_path is not None:
             try:
                 self.lineage_logger.save_to_file(str(self.lineage_path))
             except OSError as exc:
-                result["lineage_persistence_error"] = type(exc).__name__
+                result["lineage_persistence_error_type"] = type(exc).__name__
         return result
 
     def start_daemon(self) -> None:
-        """Run until stop_daemon; callers must opt in by invoking this method."""
-        if self._running:
-            raise RuntimeError("Daemon is already running")
-        self._running = True
-        self._stop_event.clear()
+        """Explicitly run the polling loop. There is no default feed provider."""
+        if self.is_running:
+            raise RuntimeError("daemon is already running")
+        self.is_running = True
         try:
-            while not self._stop_event.is_set():
+            while self.is_running:
                 self.process_cycle()
-                self._stop_event.wait(self.poll_interval)
+                time_to_wait = self.poll_interval
+                # Event-based interruption is supplied by stop_daemon via a short
+                # sleep loop to keep this module dependency-free.
+                while self.is_running and time_to_wait > 0:
+                    step = min(0.1, time_to_wait)
+                    import time
+                    time.sleep(step)
+                    time_to_wait -= step
         finally:
-            self._running = False
-            self.stop_daemon()
+            self.is_running = False
+            if self.dispatcher is not None:
+                self.dispatcher.close()
 
     def stop_daemon(self) -> None:
-        self._stop_event.set()
+        self.is_running = False
         if self.dispatcher is not None:
             self.dispatcher.close()

@@ -1,14 +1,14 @@
-# Corrected telemetry-to-OSC dispatcher prototype
+# Corrected one-way orchestration daemon
 
-`marcus_orchestrator_daemon.py` is an injected-dependency, one-way telemetry-to-OSC dispatcher. It is not a closed loop: there is no feedback receiver or acknowledgment protocol. No feed is configured by default, and importing the module starts no daemon.
+`marcus_orchestrator_daemon.py` accepts a caller-injected telemetry provider. There is no default live or simulated feed. Its flow is one-way telemetry → provisional mapping → lineage record → optional OSC dispatch; it is **not a closed loop** and it does not implement a feedback receiver.
 
-The OSC sender uses standard OSC bundle framing, immediate timetag, message length prefixes, OSC int32 for `tet_index`, and float32 for frequency. Transmission is opt-in and limited to IPv4 loopback. `SENT` means the local OS accepted a UDP datagram; it does not mean REAPER received or applied it.
+The OSC dispatcher uses standard bundle framing and distinct integer/float OSC tags, is loopback-only and disabled by default. `SENT` means only that the local OS accepted the UDP datagram; `receiver_confirmed` remains false. Socket use is per-send and `close()` is an explicit lifecycle method.
 
-The default feed provenance label for an injected provider is `SIMULATED`; integrations must explicitly label provider provenance. This does not independently verify the source. Pressure bounds (870–1085 hPa), clamping, Python ties-to-even rounding, 432 Hz anchor, and the 20-TET formula are recorded as provisional mapping parameters, not atmospheric laws. Non-finite values and invalid units/missingness are quarantined.
+The pressure range, clamping policy, Python ties-to-even rounding, 432 Hz reference, and TET formula are recorded as provisional mapping parameters. Range-clamped readings are labeled `CLAMPED_LOW` or `CLAMPED_HIGH`; non-finite values are `INVALID_MEASUREMENT`; missingness and unit issues are quarantined. No production authorization or atmospheric law is implied.
 
-Lineage digests use deterministic compact, sorted Python JSON serialization, not RFC 8785 JCS. The graph records `jcs_canonicalized: false`, retains the digest by exact node ID, defaults edges to `UNVERIFIED`, and can detect duplicate IDs, malformed hashes, dangling references, and directed cycles. A hash alone does not verify a transformation.
+Lineage digests are computed using compact sorted Python JSON serialization, not RFC 8785 JCS. `jcs_canonicalized` is false, exact input-node digest is returned, and edges remain `UNVERIFIED`. The structural validator checks duplicate IDs, dangling references, digest syntax, and cycles. It does not verify scientific provenance or transformation correctness.
 
-Run deterministic local tests with:
+Run local tests with:
 
 ```sh
 python -m unittest discover -s tests -v
