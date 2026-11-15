@@ -32,7 +32,36 @@
         "version": {"const": "1.0"},
         "canonical_prospectively": {"const": true},
         "historical_provenance": {"type": "object", "required": ["ALPHA", "BETA-MU"], "properties": {"ALPHA": {"type": "string"}, "BETA-MU": {"type": "string"}}},
-        "families": {"type": "array", "minItems": 12, "maxItems": 12, "items": {"type": "object", "required": ["id", "association", "identity"], "properties": {"id": {"enum": ["ALPHA", "BETA", "GAMMA", "DELTA", "EPSILON", "ZETA", "ETA", "THETA", "IOTA", "KAPPA", "LAMBDA", "MU"]}, "association": {"type": "string"}, "identity": {"type": "string"}}, "additionalProperties": false}, "uniqueItems": true},
+        "families": {
+          "type": "array",
+          "minItems": 12,
+          "maxItems": 12,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "required": ["id", "association", "identity"],
+            "properties": {
+              "id": {"enum": ["ALPHA", "BETA", "GAMMA", "DELTA", "EPSILON", "ZETA", "ETA", "THETA", "IOTA", "KAPPA", "LAMBDA", "MU"]},
+              "association": {"type": "string"},
+              "identity": {"type": "string"}
+            },
+            "additionalProperties": false
+          },
+          "allOf": [
+            {"contains": {"properties": {"id": {"const": "ALPHA"}}, "required": ["id"]}, "minContains": 1, "maxContains": 1},
+            {"contains": {"properties": {"id": {"const": "BETA"}}, "required": ["id"]}, "minContains": 1, "maxContains": 1},
+            {"contains": {"properties": {"id": {"const": "GAMMA"}}, "required": ["id"]}, "minContains": 1, "maxContains": 1},
+            {"contains": {"properties": {"id": {"const": "DELTA"}}, "required": ["id"]}, "minContains": 1, "maxContains": 1},
+            {"contains": {"properties": {"id": {"const": "EPSILON"}}, "required": ["id"]}, "minContains": 1, "maxContains": 1},
+            {"contains": {"properties": {"id": {"const": "ZETA"}}, "required": ["id"]}, "minContains": 1, "maxContains": 1},
+            {"contains": {"properties": {"id": {"const": "ETA"}}, "required": ["id"]}, "minContains": 1, "maxContains": 1},
+            {"contains": {"properties": {"id": {"const": "THETA"}}, "required": ["id"]}, "minContains": 1, "maxContains": 1},
+            {"contains": {"properties": {"id": {"const": "IOTA"}}, "required": ["id"]}, "minContains": 1, "maxContains": 1},
+            {"contains": {"properties": {"id": {"const": "KAPPA"}}, "required": ["id"]}, "minContains": 1, "maxContains": 1},
+            {"contains": {"properties": {"id": {"const": "LAMBDA"}}, "required": ["id"]}, "minContains": 1, "maxContains": 1},
+            {"contains": {"properties": {"id": {"const": "MU"}}, "required": ["id"]}, "minContains": 1, "maxContains": 1}
+          ]
+        },
         "identity_mutation_authorized": {"const": false}
       },
       "additionalProperties": true
