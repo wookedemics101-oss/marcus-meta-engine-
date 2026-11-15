@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/wookedemics101-oss/marcus-meta-engine-/blob/main/schemas/marcus.calendar-registry.v1.schema.json",
+  "title": "M.A.R.C.U.S. Canonical 27-Calendar Registry v1",
+  "description": "Structural validation for the canonical calendar registry. It does not certify historical claims, computation algorithms, or production readiness.",
+  "type": "object",
+  "required": ["registry_version", "canonical_anchor", "governance_invariants", "calendars"],
+  "additionalProperties": false,
+  "properties": {
+    "registry_version": {"type": "string", "const": "1.0.0"},
+    "canonical_anchor": {"type": "string", "const": "astronomical_julian_day"},
+    "governance_invariants": {
+      "type": "object",
+      "required": ["exact_calendar_count", "authorizes_production_changes", "establishes_environmental_causation"],
+      "additionalProperties": false,
+      "properties": {
+        "exact_calendar_count": {"type": "integer", "const": 27},
+        "authorizes_production_changes": {"type": "boolean", "const": false},
+        "establishes_environmental_causation": {"type": "boolean", "const": false}
+      }
+    },
+    "calendars": {
+      "type": "array",
+      "minItems": 27,
+      "maxItems": 27,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/CalendarDefinition"},
+      "allOf": [
+        {"contains": {"properties": {"calendar_id": {"const": "gregorian"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "julian"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "revised_julian"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "solar_hijri"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "islamic_hijri_tabular"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "islamic_hijri_observational"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "hebrew"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "chinese_traditional"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "hindu_panchanga_amanta"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "hindu_panchanga_purnimanta"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "indian_national_saka"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "ethiopian"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "bahai_badi"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "buddhist_theravada"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "tibetan_phugpa"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "bengali_bangabda"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "nepali_bikram_sambat"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "japanese_nengo"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "minguo_roc"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "javanese_sultan_agung"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "balinese_pawukon"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "maya_long_count"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "maya_calendar_round"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "borana_lunar_stellar"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "igbo_traditional"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "egyptian_civil_sothic"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1},
+        {"contains": {"properties": {"calendar_id": {"const": "astronomical_julian_day"}}, "required": ["calendar_id"]}, "minContains": 1, "maxContains": 1}
+      ]
+    }
+  },
+  "$defs": {
+    "CalendarDefinition": {
+      "type": "object",
+      "required": ["calendar_id", "calendar_name", "calendar_type", "epoch", "day_boundary", "timezone_rule", "leap_rule", "calculation_method", "source_reference", "version", "confidence"],
+      "additionalProperties": false,
+      "properties": {
+        "calendar_id": {"type": "string", "enum": ["gregorian", "julian", "revised_julian", "solar_hijri", "islamic_hijri_tabular", "islamic_hijri_observational", "hebrew", "chinese_traditional", "hindu_panchanga_amanta", "hindu_panchanga_purnimanta", "indian_national_saka", "ethiopian", "bahai_badi", "buddhist_theravada", "tibetan_phugpa", "bengali_bangabda", "nepali_bikram_sambat", "japanese_nengo", "minguo_roc", "javanese_sultan_agung", "balinese_pawukon", "maya_long_count", "maya_calendar_round", "borana_lunar_stellar", "igbo_traditional", "egyptian_civil_sothic", "astronomical_julian_day"]},
+        "calendar_name": {"type": "string", "minLength": 1},
+        "calendar_type": {"type": "string", "enum": ["solar", "lunar", "lunisolar", "fixed", "ritual", "computational"]},
+        "epoch": {"type": "string", "minLength": 1},
+        "day_boundary": {"type": "string", "enum": ["midnight", "sunset", "sunrise", "dawn", "noon_utc"]},
+        "timezone_rule": {"type": "string", "minLength": 1},
+        "leap_rule": {"type": "string", "minLength": 1},
+        "calculation_method": {"type": "string", "minLength": 1},
+        "source_reference": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+        "confidence": {"type": "string", "enum": ["verified", "provisional", "interpretive"]}
+      }
+    }
+  }
+}
