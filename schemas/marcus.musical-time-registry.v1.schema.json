@@ -144,13 +144,13 @@
         },
         "reproducibility_proof": {
           "type": "object",
-          "required": ["is_deterministic", "algorithm_id", "version"],
+          "required": ["is_deterministic", "algorithm_id", "version", "reproducibility_hash"],
           "additionalProperties": false,
           "properties": {
             "is_deterministic": {"type": "boolean", "const": true},
             "algorithm_id": {"type": "string", "minLength": 1},
             "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
-            "reproducibility_hash": {"type": ["string", "null"], "pattern": "^(sha256:|)$"}
+            "reproducibility_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
           }
         },
         "source_reference": {"type": "string", "minLength": 1},
