@@ -1,0 +1,78 @@
+registry_version: "1.0.0"
+
+base_clock_invariants:
+  reference_bpm: 128
+  reference_meter: "6/8"
+  canonical_time_anchor: "astronomical_julian_day"
+
+governance_invariants:
+  canonical_family_count: 12
+  canonical_calendar_count: 27
+  open_admissibility_enabled: true
+  authorizes_production_changes: false
+  production_mapping_authorization: "none"
+
+measurements:
+  - measurement_id: mtm_jdn_48khz_sample_scalar
+    measurement_name: "JDN-Anchored 48kHz Audio Sample Scalar"
+    measurement_domain: temporal_scalar
+    bound_family_id: FAM_12
+    bound_calendar_ids: [astronomical_julian_day]
+    anchor_reference: "JDN 2440587.5 (1970-01-01T00:00:00Z) with UTC origin"
+    mathematical_definition: "samples = round((JDN - 2440587.5) * 86400 * 48000)"
+    observable_unit: audio_samples
+    reproducibility_proof:
+      is_deterministic: true
+      algorithm_id: "jdn_to_pcm_frame_v1"
+      version: "1.0.0"
+      reproducibility_hash: "sha256:placeholder"
+    source_reference: "AES3 / SMPTE ST 12-1; IAU SOFA"
+    confidence: verified
+
+  - measurement_id: mtm_euclidean_metonic_19_7
+    measurement_name: "Euclidean Metonic Leap-Month Rhythm E(7, 19)"
+    measurement_domain: polyrhythmic_ratio
+    bound_family_id: FAM_04
+    bound_calendar_ids: [hebrew, chinese_traditional]
+    anchor_reference: "19-year Metonic cycle (235 synodic months = 19 tropical years)"
+    mathematical_definition: "Bjorklund Euclidean distribution E(7, 19) across a 19-pulse cycle"
+    observable_unit: beats_per_cycle
+    reproducibility_proof:
+      is_deterministic: true
+      algorithm_id: "bjorklund_euclidean_v1"
+      version: "1.0.0"
+      reproducibility_hash: "sha256:placeholder"
+    source_reference: "Toussaint (2005) Euclidean Rhythms; Meton of Athens (432 BCE)"
+    confidence: verified
+
+  - measurement_id: mtm_karnatak_suladi_tala_35
+    measurement_name: "Karnatak 35 Suladi Sapta Tala Cycle"
+    measurement_domain: tala_cyclical
+    bound_family_id: FAM_05
+    bound_calendar_ids: [hindu_panchanga_amanta, hindu_panchanga_purnimanta]
+    anchor_reference: "Vedic Tithi (1..30) mapped across 7 Talas and 5 Jatis"
+    mathematical_definition: "Avartan = Laghu(Jati) + Druta(2) + Anudruta(1) indexed by Tithi mod 35"
+    observable_unit: beats_per_cycle
+    reproducibility_proof:
+      is_deterministic: true
+      algorithm_id: "karnatak_tala_indexer_v1"
+      version: "1.0.0"
+      reproducibility_hash: "sha256:placeholder"
+    source_reference: "Purandara Dasa Suladi Sapta Tala System; Sangita Ratnakara"
+    confidence: verified
+
+  - measurement_id: mtm_saros_just_intonation_ratio
+    measurement_name: "Saros Synodic-to-Draconic Acoustic Ratio (223:242)"
+    measurement_domain: microtonal_interval
+    bound_family_id: FAM_12
+    bound_calendar_ids: [astronomical_julian_day]
+    anchor_reference: "Saros Eclipse Period (6585.3211 days)"
+    mathematical_definition: "cents = 1200 * log2(242 / 223)"
+    observable_unit: cents
+    reproducibility_proof:
+      is_deterministic: true
+      algorithm_id: "acoustic_log2_cents_v1"
+      version: "1.0.0"
+      reproducibility_hash: "sha256:placeholder"
+    source_reference: "IAU Eclipse Elements; Helmholtz Sensations of Tone"
+    confidence: verified

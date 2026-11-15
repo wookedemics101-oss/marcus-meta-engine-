@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/wookedemics101-oss/marcus-meta-engine-/blob/main/schemas/marcus.musical-time-registry.v1.schema.json",
+  "title": "M.A.R.C.U.S. Musical Time Measurement Registry v1",
+  "description": "Open-admissibility registry for traceable, observable, and reproducible musical-time measurements without authorizing production or environmental causation changes.",
+  "type": "object",
+  "required": ["registry_version", "base_clock_invariants", "governance_invariants", "measurements"],
+  "additionalProperties": false,
+  "properties": {
+    "registry_version": {"type": "string", "const": "1.0.0"},
+    "base_clock_invariants": {
+      "type": "object",
+      "required": ["reference_bpm", "reference_meter", "canonical_time_anchor"],
+      "additionalProperties": false,
+      "properties": {
+        "reference_bpm": {"type": "integer", "const": 128},
+        "reference_meter": {"type": "string", "const": "6/8"},
+        "canonical_time_anchor": {"type": "string", "const": "astronomical_julian_day"}
+      }
+    },
+    "governance_invariants": {
+      "type": "object",
+      "required": ["canonical_family_count", "canonical_calendar_count", "open_admissibility_enabled", "authorizes_production_changes", "production_mapping_authorization"],
+      "additionalProperties": false,
+      "properties": {
+        "canonical_family_count": {"type": "integer", "const": 12},
+        "canonical_calendar_count": {"type": "integer", "const": 27},
+        "open_admissibility_enabled": {"type": "boolean", "const": true},
+        "authorizes_production_changes": {"type": "boolean", "const": false},
+        "production_mapping_authorization": {"type": "string", "const": "none"}
+      }
+    },
+    "measurements": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/MusicalTimeMeasurement"}
+    }
+  },
+  "$defs": {
+    "MusicalTimeMeasurement": {
+      "type": "object",
+      "required": [
+        "measurement_id",
+        "measurement_name",
+        "measurement_domain",
+        "bound_family_id",
+        "bound_calendar_ids",
+        "anchor_reference",
+        "mathematical_definition",
+        "observable_unit",
+        "reproducibility_proof",
+        "source_reference",
+        "confidence"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "measurement_id": {
+          "type": "string",
+          "pattern": "^mtm_[a-z0-9_]+$"
+        },
+        "measurement_name": {"type": "string", "minLength": 1},
+        "measurement_domain": {
+          "type": "string",
+          "enum": [
+            "temporal_scalar",
+            "polyrhythmic_ratio",
+            "harmonic_overtone",
+            "celestial_kinematic",
+            "microtonal_interval",
+            "tala_cyclical",
+            "metric_modulation"
+          ]
+        },
+        "bound_family_id": {
+          "type": "string",
+          "enum": [
+            "FAM_01",
+            "FAM_02",
+            "FAM_03",
+            "FAM_04",
+            "FAM_05",
+            "FAM_06",
+            "FAM_07",
+            "FAM_08",
+            "FAM_09",
+            "FAM_10",
+            "FAM_11",
+            "FAM_12"
+          ]
+        },
+        "bound_calendar_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "gregorian",
+              "julian",
+              "revised_julian",
+              "solar_hijri",
+              "islamic_hijri_tabular",
+              "islamic_hijri_observational",
+              "hebrew",
+              "chinese_traditional",
+              "hindu_panchanga_amanta",
+              "hindu_panchanga_purnimanta",
+              "indian_national_saka",
+              "ethiopian",
+              "bahai_badi",
+              "buddhist_theravada",
+              "tibetan_phugpa",
+              "bengali_bangabda",
+              "nepali_bikram_sambat",
+              "japanese_nengo",
+              "minguo_roc",
+              "javanese_sultan_agung",
+              "balinese_pawukon",
+              "maya_long_count",
+              "maya_calendar_round",
+              "borana_lunar_stellar",
+              "igbo_traditional",
+              "egyptian_civil_sothic",
+              "astronomical_julian_day"
+            ]
+          }
+        },
+        "anchor_reference": {"type": "string", "minLength": 1},
+        "mathematical_definition": {"type": "string", "minLength": 1},
+        "observable_unit": {
+          "type": "string",
+          "enum": [
+            "seconds",
+            "milliseconds",
+            "midi_ticks",
+            "audio_samples",
+            "hertz",
+            "cents",
+            "ratio",
+            "beats_per_cycle",
+            "degrees"
+          ]
+        },
+        "reproducibility_proof": {
+          "type": "object",
+          "required": ["is_deterministic", "algorithm_id", "version"],
+          "additionalProperties": false,
+          "properties": {
+            "is_deterministic": {"type": "boolean", "const": true},
+            "algorithm_id": {"type": "string", "minLength": 1},
+            "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+            "reproducibility_hash": {"type": ["string", "null"], "pattern": "^(sha256:|)$"}
+          }
+        },
+        "source_reference": {"type": "string", "minLength": 1},
+        "confidence": {"type": "string", "enum": ["verified", "provisional"]}
+      }
+    }
+  }
+}
