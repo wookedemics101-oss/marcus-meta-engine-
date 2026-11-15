@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/wookedemics101-oss/marcus-meta-engine-/blob/main/schemas/marcus.cosmic-daily-calibration-handoff.v1.schema.json",
+  "title": "M.A.R.C.U.S. Cosmic Daily Calibration Handoff v1",
+  "description": "Validation contract for the immutable 2026-11-14 calibration handoff. The schema validates structure and protected invariants; it does not validate scientific claims or authorize transformations.",
+  "type": "object",
+  "required": ["schema", "record", "governance", "analytical_registry", "production_controllers", "production_baseline", "observations", "continuity", "candidate_audio", "generation_prompt", "diir", "verification_gates", "final_state"],
+  "properties": {
+    "schema": {"const": "marcus.cosmic-daily-calibration-handoff/v1"},
+    "record": {
+      "type": "object",
+      "required": ["system", "title", "calibration_date", "snapshot", "status", "generation", "inspection", "mapping_authorization", "immutability"],
+      "properties": {
+        "system": {"const": "M.A.R.C.U.S."},
+        "title": {"const": "COSMIC DAILY CALIBRATION"},
+        "calibration_date": {"const": "2026-11-14"},
+        "snapshot": {"type": "object", "required": ["local", "utc"], "properties": {"local": {"type": "string", "format": "date-time"}, "utc": {"type": "string", "format": "date-time", "pattern": "Z$"}}, "additionalProperties": true},
+        "status": {"enum": ["complete-for-available-evidence", "incomplete", "superseded"]},
+        "generation": {"enum": ["not-generated", "generated"]},
+        "inspection": {"enum": ["not-performed", "performed"]},
+        "mapping_authorization": {"enum": ["none", "authorized"]},
+        "immutability": {"const": "historical-record-must-not-be-rewritten"}
+      },
+      "additionalProperties": true
+    },
+    "governance": {"type": "object", "required": ["evidence_classes", "rules", "authorized_cosmic_or_environmental_mappings"], "properties": {"evidence_classes": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}, "rules": {"type": "array", "items": {"type": "string"}}, "authorized_cosmic_or_environmental_mappings": {"type": "array", "maxItems": 0}}},
+    "analytical_registry": {
+      "type": "object",
+      "required": ["name", "version", "canonical_prospectively", "historical_provenance", "families", "identity_mutation_authorized"],
+      "properties": {
+        "name": {"const": "Twelve-Family Registry"},
+        "version": {"const": "1.0"},
+        "canonical_prospectively": {"const": true},
+        "historical_provenance": {"type": "object", "required": ["ALPHA", "BETA-MU"], "properties": {"ALPHA": {"type": "string"}, "BETA-MU": {"type": "string"}}},
+        "families": {"type": "array", "minItems": 12, "maxItems": 12, "items": {"type": "object", "required": ["id", "association", "identity"], "properties": {"id": {"enum": ["ALPHA", "BETA", "GAMMA", "DELTA", "EPSILON", "ZETA", "ETA", "THETA", "IOTA", "KAPPA", "LAMBDA", "MU"]}, "association": {"type": "string"}, "identity": {"type": "string"}}, "additionalProperties": false}, "uniqueItems": true},
+        "identity_mutation_authorized": {"const": false}
+      },
+      "additionalProperties": true
+    },
+    "production_controllers": {
+      "type": "object",
+      "required": ["architecture", "controllers", "transformations_authorized_by_2026_11_14_observations"],
+      "properties": {
+        "architecture": {"const": "separate-from-analytical-family-registry"},
+        "controllers": {"type": "object", "required": ["MU", "ALPHA", "BETA", "GAMMA", "DELTA", "EPSILON", "THETA", "ZETA", "ETA", "IOTA", "KAPPA", "LAMBDA"], "properties": {"MU": {"type": "string"}, "ALPHA": {"type": "string"}, "BETA": {"type": "string"}, "GAMMA": {"type": "string"}, "DELTA": {"type": "string"}, "EPSILON": {"type": "string"}, "THETA": {"type": "string"}, "ZETA": {"type": "string"}, "ETA": {"type": "string"}, "IOTA": {"type": "string"}, "KAPPA": {"type": "string"}, "LAMBDA": {"type": "string"}}, "minProperties": 12, "maxProperties": 12},
+        "transformations_authorized_by_2026_11_14_observations": {"const": false}
+      },
+      "additionalProperties": true
+    },
+    "production_baseline": {
+      "type": "object",
+      "required": ["tempo_bpm", "meter", "tuning_reference", "microtonal_system", "maximum_duration_seconds", "superseded_draft", "candidate_onset_estimate"],
+      "properties": {
+        "tempo_bpm": {"const": 128},
+        "meter": {"const": "6/8"},
+        "tuning_reference": {"const": "A4=432Hz"},
+        "microtonal_system": {"const": "20-TET where supported"},
+        "maximum_duration_seconds": {"const": 180, "type": "number", "maximum": 180},
+        "superseded_draft": {"type": "object", "required": ["tempo_bpm", "status"], "properties": {"tempo_bpm": {"const": 84}, "status": {"const": "superseded"}}},
+        "candidate_onset_estimate": {"type": "object", "required": ["bpm", "status"], "properties": {"bpm": {"type": "number"}, "status": {"type": "string"}}}
+      },
+      "additionalProperties": true
+    },
+    "observations": {
+      "type": "object",
+      "required": ["comparisons", "current_only", "unavailable_or_not_comparable", "interpretation_limits"],
+      "properties": {
+        "comparisons": {"type": "array", "items": {"type": "object", "required": ["variable"], "properties": {"variable": {"type": "string"}, "observation_time_utc": {"type": ["string", "null"], "format": "date-time"}}, "additionalProperties": true}},
+        "current_only": {"type": "object", "properties": {"solar_wind": {"type": "object", "required": ["speed_km_s", "observation_time_utc"], "properties": {"speed_km_s": {"type": "number"}, "observation_time_utc": {"type": "string", "format": "date-time", "pattern": "Z$"}}}, "imf": {"type": "object", "properties": {"Bt_nT": {"type": "number"}, "Bz_GSM_nT": {"type": "number"}, "observation_time_utc": {"type": ["string", "null"]}}}, "solar_flux": {"type": "object", "properties": {"value_sfu": {"type": "number"}, "observation_date": {"type": "string", "format": "date"}}}}, "additionalProperties": true},
+        "unavailable_or_not_comparable": {"type": "object"},
+        "interpretation_limits": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    },
+    "continuity": {"type": "object", "required": ["prompt_continuity", "direct_audio_inheritance"], "properties": {"prompt_continuity": {"enum": ["supported", "unverified", "not-supported"]}, "direct_audio_inheritance": {"enum": ["supported", "unverified", "not-supported"]}}, "additionalProperties": true},
+    "candidate_audio": {"type": "object", "required": ["duration_seconds", "sha256"], "properties": {"duration_seconds": {"type": "number", "minimum": 0}, "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}, "additionalProperties": true},
+    "generation_prompt": {
+      "type": "object",
+      "required": ["completeness", "working_title", "identity", "recurring_lyric_lines", "section_order", "governance_voices", "voice_constraints", "protected_production_requirements", "data_use", "exclusions"],
+      "properties": {
+        "completeness": {"enum": ["partial-generation-specification", "complete-generation-specification"]},
+        "working_title": {"type": "string"},
+        "identity": {"type": "string"},
+        "recurring_lyric_lines": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+        "section_order": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+        "governance_voices": {"type": "array", "const": ["Competence", "Independence", "Authority", "Evidentiary Sufficiency"]},
+        "voice_constraints": {"type": "object", "required": ["independently_recognizable", "merge_into_anonymous_choir", "fixed_timbral_assignments"], "properties": {"independently_recognizable": {"const": true}, "merge_into_anonymous_choir": {"const": false}, "fixed_timbral_assignments": {"const": "do-not-invent"}}},
+        "protected_production_requirements": {"type": "object", "required": ["tempo_bpm", "meter", "tuning_reference", "microtonal_system", "maximum_duration_seconds"], "properties": {"tempo_bpm": {"const": 128}, "meter": {"const": "6/8"}, "tuning_reference": {"const": "A4=432Hz"}, "microtonal_system": {"const": "20-TET where supported"}, "maximum_duration_seconds": {"const": 180, "type": "number", "maximum": 180}}},
+        "data_use": {"type": "object"},
+        "exclusions": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    },
+    "diir": {
+      "type": "object",
+      "required": ["name", "version", "integrations", "provenance_status"],
+      "properties": {
+        "name": {"const": "D.E.L.T.A. Integrated Intelligence Registry"},
+        "version": {"type": "string"},
+        "provenance_status": {"type": "string"},
+        "integrations": {"type": "array", "items": {"type": "object", "required": ["resource", "contribution", "limitation", "source_url", "retrieved_at_utc", "observed_at_utc", "source_relationship"], "properties": {"resource": {"type": "string"}, "contribution": {"type": "string"}, "limitation": {"type": "string"}, "source_url": {"type": ["string", "null"], "format": "uri"}, "retrieved_at_utc": {"type": ["string", "null"], "format": "date-time"}, "observed_at_utc": {"type": ["string", "null"], "format": "date-time"}, "source_relationship": {"type": "string"}}, "additionalProperties": true}}
+      },
+      "additionalProperties": true
+    },
+    "verification_gates": {"type": "object", "required": ["before_generation", "after_generation"], "properties": {"before_generation": {"type": "array", "items": {"type": "string"}}, "after_generation": {"type": "array", "items": {"type": "string"}}}},
+    "final_state": {
+      "type": "object",
+      "required": ["calibration_date", "production_controller_count", "approved_cosmic_mappings", "tempo_bpm", "meter", "tuning", "microtonal_system", "maximum_duration_seconds", "prompt_continuity", "audio_inheritance", "audio_generated", "audio_inspected", "audio_archived"],
+      "properties": {
+        "calibration_date": {"const": "2026-11-14"},
+        "production_controller_count": {"const": 12, "type": "integer"},
+        "approved_cosmic_mappings": {"type": "array", "maxItems": 0},
+        "tempo_bpm": {"const": 128},
+        "meter": {"const": "6/8"},
+        "tuning": {"const": "A4=432Hz"},
+        "microtonal_system": {"const": "20-TET where supported"},
+        "maximum_duration_seconds": {"const": 180, "type": "number", "maximum": 180},
+        "prompt_continuity": {"enum": ["supported", "unverified", "not-supported"]},
+        "audio_inheritance": {"enum": ["supported", "unverified", "not-supported"]},
+        "audio_generated": {"const": false},
+        "audio_inspected": {"const": false},
+        "audio_archived": {"const": false}
+      },
+      "additionalProperties": true
+    }
+  },
+  "allOf": [
+    {"properties": {"record": {"properties": {"generation": {"const": "not-generated"}, "inspection": {"const": "not-performed"}, "mapping_authorization": {"const": "none"}}}}},
+    {"properties": {"final_state": {"properties": {"prompt_continuity": {"const": "supported"}, "audio_inheritance": {"const": "unverified"}}}}},
+    {"properties": {"production_controllers": {"properties": {"controllers": {"propertyNames": {"enum": ["MU", "ALPHA", "BETA", "GAMMA", "DELTA", "EPSILON", "THETA", "ZETA", "ETA", "IOTA", "KAPPA", "LAMBDA"]}}}}}}
+  ],
+  "additionalProperties": true
+}

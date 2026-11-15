@@ -1,0 +1,353 @@
+schema: "marcus.cosmic-daily-calibration-handoff/v1"
+record:
+  system: "M.A.R.C.U.S."
+  title: "COSMIC DAILY CALIBRATION"
+  calibration_date: "2026-11-14"
+  snapshot:
+    local: "2026-11-14T08:28:01-05:00"
+    utc: "2026-11-14T13:28:01Z"
+  status: "complete-for-available-evidence"
+  generation: "not-generated"
+  inspection: "not-performed"
+  mapping_authorization: "none"
+  immutability: "historical-record-must-not-be-rewritten"
+
+governance:
+  evidence_classes:
+    - observations
+    - derived_quantities
+    - forecasts
+    - interpretations
+    - creative_decisions
+  rules:
+    - "A measured difference is not an authorized transformation."
+    - "Measurement, interpretation, authorization, execution, and verification are separate operations."
+    - "Missing data are neither zero nor proof of inactivity."
+    - "Forecasts are not observations."
+    - "Ephemeris coordinates do not establish physical astrological effects."
+    - "Do not infer musical signatures from zodiac associations."
+  authorized_cosmic_or_environmental_mappings: []
+
+analytical_registry:
+  name: "Twelve-Family Registry"
+  version: "1.0"
+  canonical_prospectively: true
+  historical_provenance:
+    ALPHA: "Aries/Initiation has independent historical support."
+    BETA-MU: "Administratively assigned on 2026-11-12; not independently recovered historical identities."
+  families:
+    - {id: ALPHA, association: Aries, identity: Initiation}
+    - {id: BETA, association: Taurus, identity: Stabilization}
+    - {id: GAMMA, association: Gemini, identity: Communication}
+    - {id: DELTA, association: Cancer, identity: Nurturing}
+    - {id: EPSILON, association: Leo, identity: Expression}
+    - {id: ZETA, association: Virgo, identity: Refinement}
+    - {id: ETA, association: Libra, identity: Balance}
+    - {id: THETA, association: Scorpio, identity: Transformation}
+    - {id: IOTA, association: Sagittarius, identity: Exploration}
+    - {id: KAPPA, association: Capricorn, identity: Structure}
+    - {id: LAMBDA, association: Aquarius, identity: Innovation}
+    - {id: MU, association: Pisces, identity: Transcendence}
+  identity_mutation_authorized: false
+
+production_controllers:
+  architecture: "separate-from-analytical-family-registry"
+  controllers:
+    MU: "Tempo, meter, pulse, measures"
+    ALPHA: "Scale, mode, key, pitch vocabulary"
+    BETA: "Primary melodic motif and evolution"
+    GAMMA: "Bass, harmony, chord inversions"
+    DELTA: "Subdivision, syncopation, percussion density"
+    EPSILON: "Voicing, instrumentation, register, voice leading"
+    THETA: "Tonal center, harmonic gravity, modulation"
+    ZETA: "Data translation, scaling, automation, provenance"
+    ETA: "Mixing, gain, EQ, compression, stereo, dynamics"
+    IOTA: "Arrangement, form, transitions, lyrics"
+    KAPPA: "Timbre, synthesis, effects, acoustic residue"
+    LAMBDA: "Rendering, mastering, export, inspection"
+  transformations_authorized_by_2026_11_14_observations: false
+
+production_baseline:
+  tempo_bpm: 128
+  meter: "6/8"
+  tuning_reference: "A4=432Hz"
+  microtonal_system: "20-TET where supported"
+  maximum_duration_seconds: 180
+  superseded_draft:
+    tempo_bpm: 84
+    status: "superseded"
+  candidate_onset_estimate:
+    bpm: 143.6
+    status: "historical-estimate-only; does-not-establish-intended-tempo-or-meter"
+
+observations:
+  comparisons:
+    - variable: "planetary Kp"
+      observation_time_utc: "2026-11-14T06:00:00Z"
+      previous: 1.33
+      current: 1.00
+      change: -0.33
+      caveat: "Kp is quasi-logarithmic."
+    - variable: "lunar illumination"
+      observation_time_utc: "2026-11-14T12:00:00Z"
+      previous_percent_approx: 16
+      current_percent_approx: 23
+      change_percentage_points_approx: 7
+    - variable: "KMTN temperature"
+      observation_time_utc: null
+      previous_c: 7
+      current_c: 6
+      change_c: -1
+      caveat: "Regional airport proxy, not exact local measurement; exact report timestamps were not present in the source handoff."
+    - variable: "KMTN sustained wind"
+      observation_time_utc: null
+      previous_kt: 14
+      current_kt: 4
+      change_kt: -10
+      caveat: "Regional airport proxy, not exact local measurement; exact report timestamps were not present in the source handoff."
+  current_only:
+    solar_wind:
+      speed_km_s: 402
+      observation_time_utc: "2026-11-14T10:22:00Z"
+    imf:
+      Bt_nT: 5.8
+      Bz_GSM_nT: 1.1
+      observation_time_utc: null
+    ephemeris:
+      observation_time_utc: "2026-11-14T12:00:00Z"
+      moon: "Capricorn at matched noon snapshots"
+      mercury: "Scorpio; retrograde-to-direct transition between noon snapshots"
+      venus: "Libra; retrograde-to-direct transition between noon snapshots"
+    solar_flux:
+      value_sfu: 116
+      observation_date: "2026-11-12"
+      limitation: "Latest retrieved value; not a November 14 observation."
+  unavailable_or_not_comparable:
+    prior_solar_wind_sample: "not retrieved; no delta calculated"
+    exact_local_environmental_observations: "unavailable"
+    prior_audio_or_session_state: "unavailable"
+  interpretation_limits:
+    - "Ephemeris positions are calculated coordinates, not evidence of physical astrological effects."
+    - "Forecasts are not observations."
+    - "Missing data are not zero or proof of inactivity."
+
+continuity:
+  prior_prompt: "The Lantern Beneath the Surface — The Next State"
+  current_working_draft: "The Quiet Between the Storms"
+  thesis: "The record moves forward without erasing the record that came before."
+  prompt_continuity: "supported"
+  direct_audio_inheritance: "unverified"
+  available_november_13_artifacts: []
+  artifact_absence_note: "No November 13 render, stems, MIDI, score, or project-state export is available in this record."
+  text_records:
+    archive_separately: true
+
+candidate_audio:
+  file: "the_twelvefold_return.mp3"
+  uploaded_utc: "2026-11-12T19:25:18.7Z"
+  sha256: "7aa9d25accde7c56288a19dd790f9f559594b946ced2e838518866d7a46961f9"
+  format: "MP3"
+  duration_seconds: 180.950167
+  channels: 2
+  sample_rate_hz: 44100
+  bitrate_kbps: 192.27
+  historical_measurements:
+    integrated_loudness_lufs: -12.1
+    loudness_range_lu: 7.5
+    true_peak_dbfs: 0.2
+    sample_peak_dbfs_approx: -0.145
+    onset_periodicity_bpm_approx: 143.6
+  limitations:
+    - "Exceeds the 180-second maximum by 0.950167 seconds."
+    - "Association with the November 12 prompt is unverified."
+    - "Mixed MP3 does not establish A4=432Hz, 20-TET, key, motif, chord progression, or four independent voices."
+
+generation_prompt:
+  completeness: "partial-generation-specification"
+  completeness_note: "This handoff preserves prompt requirements and supplied lyric fragments, not a complete lyric sheet or the original full generation prompt. Do not infer or fabricate missing lyrics or fixed timbral assignments."
+  working_title: "THE QUIET BETWEEN THE STORMS — THE RECORD MOVES FORWARD"
+  identity: "Restrained cinematic electronic-orchestral"
+  recurring_lyric_lines:
+    - "We are the rhythm in the unknown"
+    - "Measure the motion, name the frame"
+  narrative: "Measured continuation without historical erasure."
+  bridge_concept: "Observable absence is not proof of inactivity."
+  protected_production_requirements:
+    tempo_bpm: 128
+    meter: "6/8"
+    tuning_reference: "A4=432Hz"
+    microtonal_system: "20-TET where supported"
+    maximum_duration_seconds: 180
+  section_order:
+    - Intro
+    - Verse 1
+    - Pre-Chorus
+    - Chorus
+    - Verse 2
+    - Bridge
+    - Four governance voices
+    - Final Chorus
+    - Outro
+  governance_voices:
+    - Competence
+    - Independence
+    - Authority
+    - Evidentiary Sufficiency
+  voice_constraints:
+    independently_recognizable: true
+    merge_into_anonymous_choir: false
+    fixed_timbral_assignments: "do-not-invent"
+  data_use:
+    astronomical_environmental_observations: "dated lyrical context only"
+    musical_parameter_mapping: "prohibited unless separately authorized"
+  exclusions:
+    - "No observation-driven changes to tempo, pitch, harmony, rhythm, orchestration, mix, effects, or mastering."
+    - "Do not infer musical signatures from zodiac associations."
+    - "Do not claim direct audio inheritance without comparison to the actual reference audio."
+    - "Do not treat forecasts as observations or missing data as zero or inactivity."
+    - "Do not overwrite or rewrite the immutable historical record."
+
+diir:
+  name: "D.E.L.T.A. Integrated Intelligence Registry"
+  version: "proposed-0.1"
+  canonical_resource_ids_evidenced: false
+  capability_contracts_evidenced: false
+  purpose: "Track provenance, responsibility, and authority boundaries."
+  does_not:
+    - "Validate scientific claims."
+    - "Authorize musical transformations."
+  integrations:
+    - resource: "Web retrieval"
+      contribution: "Source discovery and page retrieval"
+      limitation: "No comprehensive independent verification."
+      source_url: null
+      retrieved_at_utc: null
+      observed_at_utc: null
+      source_relationship: "Discovery/retrieval mechanism; specific pages and timestamps were not included in the supplied handoff."
+    - resource: "NOAA SWPC"
+      contribution: "Attributed Kp and solar-wind data"
+      limitation: "Direct JSON endpoints unreadable in this run."
+      source_url: null
+      retrieved_at_utc: null
+      observed_at_utc: null
+      source_relationship: "Primary source identified by attribution; exact endpoint and retrieval timestamp not supplied."
+    - resource: "Space Sentinel"
+      contribution: "Kp display"
+      limitation: "NOAA-derived intermediary."
+      source_url: null
+      retrieved_at_utc: null
+      observed_at_utc: "2026-11-14T06:00:00Z"
+      source_relationship: "Intermediary display attributed to NOAA; exact page URL and retrieval timestamp not supplied."
+    - resource: "Asteria Star"
+      contribution: "Solar-wind and field display"
+      limitation: "NOAA-derived intermediary."
+      source_url: null
+      retrieved_at_utc: null
+      observed_at_utc: "2026-11-14T10:22:00Z"
+      source_relationship: "Intermediary display attributed to NOAA; exact page URL and retrieval timestamp not supplied."
+    - resource: "USNO"
+      contribution: "Lunar phase dates"
+      limitation: "No independent recomputation."
+      source_url: null
+      retrieved_at_utc: null
+      observed_at_utc: "2026-11-14T12:00:00Z"
+      source_relationship: "Source attributed directly to USNO; exact page URL and retrieval timestamp not supplied."
+    - resource: "Astrolog-App"
+      contribution: "Ephemeris positions"
+      limitation: "No independent DE440S recomputation."
+      source_url: null
+      retrieved_at_utc: null
+      observed_at_utc: "2026-11-14T12:00:00Z"
+      source_relationship: "Ephemeris intermediary; exact page URL, retrieval timestamp, and underlying source details not supplied."
+    - resource: "Flightradar24"
+      contribution: "KMTN METAR history"
+      limitation: "Regional station proxy."
+      source_url: null
+      retrieved_at_utc: null
+      observed_at_utc: null
+      source_relationship: "Regional airport observation proxy; exact METAR report times and page URL not supplied."
+    - resource: "AirNav"
+      contribution: "KMTN TAF and station context"
+      limitation: "Forecast is not observation."
+      source_url: null
+      retrieved_at_utc: null
+      observed_at_utc: null
+      source_relationship: "Station/context intermediary; TAF is forecast, not an observation; exact URL and retrieval timestamp not supplied."
+    - resource: "Aviation Weather Center"
+      contribution: "API documentation"
+      limitation: "No direct data retrieval."
+      source_url: null
+      retrieved_at_utc: null
+      observed_at_utc: null
+      source_relationship: "Documentation only; no data endpoint retrieval claimed."
+    - resource: "NASA Science"
+      contribution: "Skywatching context"
+      limitation: "No local meteor observations."
+      source_url: null
+      retrieved_at_utc: null
+      observed_at_utc: null
+      source_relationship: "Context source, not local weather evidence; exact page URL and retrieval timestamp not supplied."
+    - resource: "Gmail"
+      contribution: "Report delivery"
+      limitation: "Delivery does not validate content."
+      source_url: null
+      retrieved_at_utc: null
+      observed_at_utc: null
+      source_relationship: "Delivery channel only; not an evidentiary source."
+  provenance_status: "incomplete-source-locator-and-retrieval-times-not-present-in-input"
+  unresolved:
+    - "Canonical resource IDs"
+    - "Formal capability contracts"
+    - "Direct NOAA verification"
+    - "Independent ephemeris recomputation"
+    - "Exact local environmental observations"
+    - "Approved mapping registry"
+    - "Prior audio/session evidence"
+    - "Independent verification of consequential calculations"
+    - "Exact source URLs and retrieval timestamps for cited retrievals; not supplied in the source handoff."
+  compliance:
+    no_inherited_authority: "pass"
+    independent_verification: "limited"
+    provenance_traceability: "partial"
+    no_silent_dependencies: "pass-with-open-gaps"
+    canonical_identity_preservation: "pass"
+  identity_questions:
+    - "Function 11 and The Eleventh Function remain separate identities."
+    - "Their definitions and relationship are unresolved."
+
+verification_gates:
+  before_generation:
+    - "Preserve candidate MP3 and checksum."
+    - "Supply actual reference audio if supported."
+    - "Identify only demonstrable motif or acoustic inheritance."
+    - "Lock protected production baseline."
+    - "Preserve separate family and controller architectures."
+    - "Record mapping status as NONE AUTHORIZED."
+  after_generation:
+    - "Record generator, settings, reference usage, and limitations."
+    - "Verify duration is at most 180 seconds."
+    - "Inspect tempo, meter, tuning, sample rate, bit depth, loudness, true peak, and stereo behavior where possible."
+    - "Verify four distinct governance voices."
+    - "Compare claimed motif or acoustic inheritance against actual reference audio."
+    - "Compute SHA-256 for generated artifacts."
+    - "Archive prompt, manifest, measurements, provenance, and output."
+    - "Distinguish intended, generated, and verified changes."
+
+final_state:
+  calibration_date: "2026-11-14"
+  analytical_registry: "Twelve-Family Registry 1.0"
+  production_controller_count: 12
+  approved_cosmic_mappings: []
+  tempo_bpm: 128
+  meter: "6/8"
+  tuning: "A4=432Hz"
+  microtonal_system: "20-TET where supported"
+  maximum_duration_seconds: 180
+  prompt_continuity: "supported"
+  audio_inheritance: "unverified"
+  audio_generated: false
+  audio_inspected: false
+  audio_archived: false
+  diir_version: "proposed-0.1"
+  disposition: "Calibration and generation prompt complete for available evidence; no unapproved data-driven transformations."
+  motto: "Calibrate. Observe. Remember. Continue."
