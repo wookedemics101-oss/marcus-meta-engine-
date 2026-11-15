@@ -1,0 +1,280 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/wookedemics101-oss/marcus-meta-engine-/blob/main/schemas/marcus.calendar-concordance.v1.schema.json",
+  "title": "M.A.R.C.U.S. Calendar Concordance Contract v1",
+  "description": "Concordance contract for mapping the validated 27-calendar registry into the daily calibration analysis. This schema enforces provenance, confidence propagation, UTC references, unavailable-result handling, and deterministic JDN linkage without authorizing production or environmental causation.",
+  "type": "object",
+  "required": [
+    "schema",
+    "record",
+    "calendar_results",
+    "provenance",
+    "status",
+    "final_state"
+  ],
+  "properties": {
+    "schema": {
+      "const": "marcus.calendar-concordance/v1"
+    },
+    "record": {
+      "type": "object",
+      "required": [
+        "calendar_date",
+        "analysis_utc",
+        "source_registry",
+        "registry_version",
+        "production_authorization",
+        "environmental_causation_authorization"
+      ],
+      "properties": {
+        "calendar_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "analysis_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source_registry": {
+          "const": "marcus.calendar-registry.v1"
+        },
+        "registry_version": {
+          "const": "1.0"
+        },
+        "production_authorization": {
+          "enum": ["none", "authorized"]
+        },
+        "environmental_causation_authorization": {
+          "enum": ["none", "authorized"]
+        }
+      },
+      "additionalProperties": true
+    },
+    "calendar_results": {
+      "type": "array",
+      "minItems": 27,
+      "maxItems": 27,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": [
+          "calendar_id",
+          "calendar_name",
+          "status",
+          "source_relationship",
+          "production_authorized",
+          "environmental_causation_authorized",
+          "utc_reference",
+          "jdn",
+          "confidence",
+          "provenance"
+        ],
+        "properties": {
+          "calendar_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]+$"
+          },
+          "calendar_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": ["available", "unavailable", "provisional", "excluded", "rejected"]
+          },
+          "source_relationship": {
+            "enum": ["direct", "intermediary", "derived", "unavailable"]
+          },
+          "production_authorized": {
+            "const": false
+          },
+          "environmental_causation_authorized": {
+            "const": false
+          },
+          "utc_reference": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "date_label": {
+            "type": ["string", "null"]
+          },
+          "date_iso": {
+            "type": ["string", "null"],
+            "format": "date"
+          },
+          "jdn": {
+            "type": ["number", "null"]
+          },
+          "jdn_basis": {
+            "type": ["string", "null"],
+            "enum": ["jd", "mjd", "jdn", "derived", null]
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "provenance": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["source", "retrieved_at_utc", "observed_at_utc", "relationship"],
+              "properties": {
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source_url": {
+                  "type": ["string", "null"],
+                  "format": "uri"
+                },
+                "retrieved_at_utc": {
+                  "type": ["string", "null"],
+                  "format": "date-time"
+                },
+                "observed_at_utc": {
+                  "type": ["string", "null"],
+                  "format": "date-time"
+                },
+                "relationship": {
+                  "enum": ["primary", "intermediary", "derived", "unavailable"]
+                },
+                "notes": {
+                  "type": ["string", "null"]
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "notes": {
+            "type": ["string", "null"]
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "source_registry",
+        "confidence_model",
+        "retrieval_rule",
+        "reserved_fields",
+        "jurisdiction_note"
+      ],
+      "properties": {
+        "source_registry": {
+          "const": "marcus.calendar-registry.v1"
+        },
+        "confidence_model": {
+          "type": "string",
+          "minLength": 1
+        },
+        "retrieval_rule": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reserved_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "jurisdiction_note": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": true
+    },
+    "status": {
+      "type": "object",
+      "required": [
+        "record_status",
+        "production_authorization",
+        "environmental_causation_authorization"
+      ],
+      "properties": {
+        "record_status": {
+          "enum": ["complete-for-available-evidence", "partial", "incomplete", "superseded"]
+        },
+        "production_authorization": {
+          "const": "none"
+        },
+        "environmental_causation_authorization": {
+          "const": "none"
+        }
+      },
+      "additionalProperties": true
+    },
+    "final_state": {
+      "type": "object",
+      "required": [
+        "calendar_count",
+        "available_calendar_count",
+        "unavailable_calendar_count",
+        "deterministic_jdn_linkage",
+        "production_authorization",
+        "environmental_causation_authorization"
+      ],
+      "properties": {
+        "calendar_count": {
+          "type": "integer",
+          "const": 27
+        },
+        "available_calendar_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unavailable_calendar_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "deterministic_jdn_linkage": {
+          "type": "boolean",
+          "const": true
+        },
+        "production_authorization": {
+          "const": "none"
+        },
+        "environmental_causation_authorization": {
+          "const": "none"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "allOf": [
+    {
+      "properties": {
+        "record": {
+          "properties": {
+            "production_authorization": {"const": "none"},
+            "environmental_causation_authorization": {"const": "none"}
+          }
+        }
+      }
+    },
+    {
+      "properties": {
+        "status": {
+          "properties": {
+            "production_authorization": {"const": "none"},
+            "environmental_causation_authorization": {"const": "none"}
+          }
+        }
+      }
+    },
+    {
+      "properties": {
+        "final_state": {
+          "properties": {
+            "production_authorization": {"const": "none"},
+            "environmental_causation_authorization": {"const": "none"}
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": true
+}
