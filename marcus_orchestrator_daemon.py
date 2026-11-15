@@ -1,12 +1,15 @@
 """One-way, injected-feed telemetry-to-OSC dispatcher prototype.
 
-No live sensor or daemon starts by default. OSC transmission is delegated to an
-explicitly enabled loopback dispatcher. UDP SENT means OS-level acceptance only;
-it is not receiver confirmation and this module has no feedback path.
+This is not a closed loop: there is no feedback receiver or receiver
+acknowledgement protocol. When a lineage_path is configured, a structurally
+valid graph is persisted before dispatch; persistence failure blocks dispatch.
+Without a path, in-memory-only operation is explicitly reported.
 """
 from __future__ import annotations
 
 import math
+import threading
+import time
 from pathlib import Path
 from typing import Any, Callable, Mapping
 
@@ -45,6 +48,19 @@ class MarcusOrchestratorDaemon:
         self.lineage_logger = lineage_logger or HermesLineageLogger()
         self.lineage_path = Path(lineage_path) if lineage_path is not None else None
         self.is_running = False
+        self._stop_event = threading.Event()
+        self._lifecycle_lock = threading.Lock()
+        self._dispatcher_closed = False
+
+    def _close_dispatcher_once(self) -> None:
+        with self._lifecycle_lock:
+            if self.dispatcher is not None and not self._dispatcher_closed:
+                self.dispatcher.close()
+                self._dispatcher_closed = True
+
+    def _persist_graph(self) -> None:
+        if self.lineage_path is not None:
+            self.lineage_logger.save_to_file(str(self.lineage_path))
 
     def process_cycle(self) -> dict[str, Any]:
         """Process one provider result; never synthesizes or fetches a live feed."""
@@ -83,9 +99,10 @@ class MarcusOrchestratorDaemon:
         input_node_id, input_digest = self.lineage_logger.add_node(
             "IZORA", "TELEMETRY_ENVELOPE", input_record
         )
+        # Retrieve through the node lookup as an explicit consistency check while
+        # retaining compatibility with the current tuple-returning add_node API.
+        input_digest = self.lineage_logger.digest_for_node(input_node_id)
 
-        # Explicit provisional mapping contract. These are engineering choices,
-        # not established atmospheric laws or production authorization.
         pressure_min, pressure_max = 870.0, 1085.0
         if value < pressure_min:
             range_status = "CLAMPED_LOW"
@@ -106,21 +123,21 @@ class MarcusOrchestratorDaemon:
             "mapping_status": range_status,
             "interpretation": "provisional_artistic_mapping_not_atmospheric_law",
         }
-        output_payload = {
-            "tet_index": tet_index, "frequency_hz": frequency,
-            "mapping_parameters": mapping_parameters,
-        }
-        output_node_id, _output_digest = self.lineage_logger.add_node(
+        output_payload = {"tet_index": tet_index, "frequency_hz": frequency,
+                          "mapping_parameters": mapping_parameters}
+        output_node_id, _ = self.lineage_logger.add_node(
             "EDMONIA", "SONIFICATION_STREAM", output_payload
         )
-        self.lineage_logger.add_edge(
-            input_node_id, output_node_id, "EDMONIA_PRESSURE_TO_20TET_MAPPING",
-            mapping_parameters, status="UNVERIFIED",
-        )
+        output_digest = self.lineage_logger.digest_for_node(output_node_id)
+        self.lineage_logger.add_edge(input_node_id, output_node_id,
+                                     "EDMONIA_PRESSURE_TO_20TET_MAPPING",
+                                     mapping_parameters, status="UNVERIFIED")
 
         result: dict[str, Any] = {
             "status": "PROCESSED", "source_kind": self.source_kind,
             "range_status": range_status,
+            "input_sha256_digest": input_digest,
+            "output_sha256_digest": output_digest,
             "sha256_digest": input_digest,
             "digest_semantics": "deterministic_compact_sorted_python_json_not_rfc8785_jcs",
             "jcs_canonicalized": False,
@@ -132,46 +149,90 @@ class MarcusOrchestratorDaemon:
                 {"address": "/edmonia/synth/tet_frequency", "value": float(frequency)},
             ],
             "delivery_status": "NOT_SENT", "receiver_confirmed": False,
-            "lineage_validation_errors": self.lineage_logger.validate(),
+            "lineage_persistence_status": "NOT_CONFIGURED",
         }
-        if self.dispatcher is not None and self.dispatcher.enabled:
+
+        errors = self.lineage_logger.validate()
+        result["lineage_validation_errors"] = errors
+        if errors:
+            result["status"] = "LINEAGE_INVALID"
+            result["delivery_status"] = "BLOCKED_LINEAGE_INVALID"
+            return result
+
+        # Configured persistence is mandatory before dispatch. In-memory-only
+        # operation is permitted only when no lineage_path was requested.
+        if self.lineage_path is not None:
+            try:
+                self._persist_graph()
+                result["lineage_persistence_status"] = "SAVED_BEFORE_DISPATCH"
+            except (OSError, ValueError) as exc:
+                result["status"] = "PERSISTENCE_FAILED"
+                result["delivery_status"] = "BLOCKED_PERSISTENCE_FAILURE"
+                result["lineage_persistence_status"] = "FAILED"
+                result["lineage_persistence_error_type"] = type(exc).__name__
+                return result
+
+        if self.dispatcher is not None and getattr(self.dispatcher, "enabled", False):
             try:
                 receipt = self.dispatcher.transmit_to_reaper(result)
-                result["delivery_status"] = receipt.get("status", "SENT")
-                result["receiver_confirmed"] = bool(receipt.get("receiver_acknowledged", False))
+                if not isinstance(receipt, Mapping):
+                    raise RuntimeError("Dispatcher returned an invalid receipt")
+                delivery_status = receipt.get("status")
+                if delivery_status not in {"SENT", "SEND_FAILED"}:
+                    raise RuntimeError("Dispatcher returned an unknown status")
+                result["delivery_status"] = delivery_status
+                result["receiver_confirmed"] = (
+                    delivery_status == "SENT" and receipt.get("receiver_acknowledged") is True
+                )
+                result["dispatch_receipt"] = dict(receipt)
             except (OSError, ValueError, RuntimeError) as exc:
                 result["delivery_status"] = "SEND_FAILED"
                 result["dispatch_error_type"] = type(exc).__name__
 
+        # Store the receipt as an audit node when possible, still UNVERIFIED as
+        # to source identity and transport-level receiver processing.
+        if result["delivery_status"] in {"SENT", "SEND_FAILED"}:
+            audit_payload = {
+                "delivery_status": result["delivery_status"],
+                "receiver_confirmed": result["receiver_confirmed"],
+                "dispatch_receipt": result.get("dispatch_receipt"),
+            }
+            audit_id, _ = self.lineage_logger.add_node("MARCUS", "AUDIT_LOG", audit_payload)
+            self.lineage_logger.add_edge(output_node_id, audit_id, "OSC_DISPATCH_RECEIPT",
+                                         {"one_way_dispatch": True}, status="UNVERIFIED")
+            result["lineage_validation_errors"] = self.lineage_logger.validate()
+
         if self.lineage_path is not None:
             try:
-                self.lineage_logger.save_to_file(str(self.lineage_path))
-            except OSError as exc:
+                self._persist_graph()
+                result["lineage_persistence_status"] = "SAVED_WITH_RECEIPT"
+            except (OSError, ValueError) as exc:
+                result["lineage_persistence_status"] = "FAILED_AFTER_DISPATCH"
                 result["lineage_persistence_error_type"] = type(exc).__name__
+                if result["status"] == "PROCESSED":
+                    result["status"] = "PERSISTENCE_FAILED_AFTER_DISPATCH"
         return result
 
     def start_daemon(self) -> None:
-        """Explicitly run the polling loop. There is no default feed provider."""
+        """Run the polling loop only when explicitly invoked."""
         if self.is_running:
             raise RuntimeError("daemon is already running")
         self.is_running = True
+        self._stop_event.clear()
         try:
-            while self.is_running:
+            while not self._stop_event.is_set():
                 self.process_cycle()
-                time_to_wait = self.poll_interval
-                # Event-based interruption is supplied by stop_daemon via a short
-                # sleep loop to keep this module dependency-free.
-                while self.is_running and time_to_wait > 0:
-                    step = min(0.1, time_to_wait)
-                    import time
-                    time.sleep(step)
-                    time_to_wait -= step
+                self._stop_event.wait(self.poll_interval)
         finally:
             self.is_running = False
-            if self.dispatcher is not None:
-                self.dispatcher.close()
+            self._close_dispatcher_once()
 
     def stop_daemon(self) -> None:
+        """Request stop; dispatcher shutdown is performed once by the loop cleanup."""
         self.is_running = False
-        if self.dispatcher is not None:
-            self.dispatcher.close()
+        self._stop_event.set()
+        if not self._running_loop_active():
+            self._close_dispatcher_once()
+
+    def _running_loop_active(self) -> bool:
+        return self.is_running
