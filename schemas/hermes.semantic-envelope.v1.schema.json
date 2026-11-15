@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/wookedemics101-oss/marcus-meta-engine-/blob/main/schemas/hermes.semantic-envelope.v1.schema.json",
+  "title": "H.E.R.M.E.S. Universal Semantic Envelope v1",
+  "description": "Structural contract for semantic data envelopes. The declared 432 Hz/20-TET values are project mapping conventions, not a claim that arbitrary source measurements are calibrated to those references. Schema validation does not perform JCS canonicalization, hash verification, or scientific validation.",
+  "type": "object",
+  "required": ["envelope_metadata", "cryptographic_integrity", "semantic_context", "acoustic_spatial_reference", "payload"],
+  "additionalProperties": false,
+  "properties": {
+    "envelope_metadata": {
+      "type": "object",
+      "required": ["envelope_id", "version", "timestamp", "source_subsystem"],
+      "additionalProperties": false,
+      "properties": {
+        "envelope_id": {"type": "string", "format": "uuid"},
+        "version": {"type": "string", "const": "1.0.0"},
+        "timestamp": {"type": "string", "format": "date-time"},
+        "source_subsystem": {"type": "string", "enum": ["FRED", "OCTAVIA", "DELTA", "HERMES", "IZORA", "EDE", "MARCUS", "ARCHITECT", "EDMONIA"]}
+      }
+    },
+    "cryptographic_integrity": {
+      "type": "object",
+      "required": ["jcs_canonicalized", "sha256_digest"],
+      "additionalProperties": false,
+      "properties": {
+        "jcs_canonicalized": {"type": "boolean", "description": "Whether the digest input was canonicalized using RFC 8785 JCS; setting true is an assertion and must be verified by the consumer."},
+        "sha256_digest": {"type": "string", "pattern": "^[a-fA-F0-9]{64}$", "description": "SHA-256 digest of the documented unsealed payload bytes. Consumers must independently recompute it; JSON Schema cannot verify a digest."}
+      }
+    },
+    "semantic_context": {
+      "type": "object",
+      "required": ["meaning", "physical_unit", "missingness_state"],
+      "additionalProperties": false,
+      "properties": {
+        "meaning": {"type": "string", "minLength": 1},
+        "physical_unit": {"type": "string", "minLength": 1},
+        "valid_range": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2},
+        "missingness_state": {"type": "string", "enum": ["VALID", "MEASURED_ZERO", "NON_DETECTION", "UNAVAILABLE", "UNKNOWN"]}
+      }
+    },
+    "acoustic_spatial_reference": {
+      "type": "object",
+      "required": ["master_pitch_reference_hz", "tuning_system", "coordinate_grid"],
+      "additionalProperties": false,
+      "properties": {
+        "master_pitch_reference_hz": {"type": "number", "const": 432.0},
+        "tuning_system": {"type": "string", "const": "20-TET"},
+        "coordinate_grid": {
+          "type": "object",
+          "required": ["tet_index", "frequency_hz"],
+          "additionalProperties": false,
+          "properties": {
+            "tet_index": {"type": "integer", "minimum": 0, "maximum": 19},
+            "frequency_hz": {"type": "number", "exclusiveMinimum": 0}
+          }
+        }
+      }
+    },
+    "payload": {"type": "object", "description": "Core data payload; consumers must preserve its semantic context and provenance.", "additionalProperties": true}
+  }
+}

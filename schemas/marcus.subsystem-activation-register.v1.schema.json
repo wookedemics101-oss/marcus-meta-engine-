@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/wookedemics101-oss/marcus-meta-engine-/blob/main/schemas/marcus.subsystem-activation-register.v1.schema.json",
   "title": "M.A.R.C.U.S. Subsystem Activation Register v1",
-  "description": "Machine-readable status for subsystem directive adoption, connection, capability, and runtime activation.",
+  "description": "Machine-readable status for subsystem directive adoption, connection, capability, runtime activation, and evidence-backed verification. JSON Schema validates structure only; it does not verify a digest or prove that a test ran.",
   "type": "object",
   "required": [
     "registry_version",
@@ -13,34 +13,37 @@
   ],
   "additionalProperties": false,
   "properties": {
-    "registry_version": {
-      "type": "string",
-      "const": "1.0.0"
-    },
-    "directive_id": {
-      "type": "string",
-      "minLength": 1
-    },
+    "registry_version": {"type": "string", "const": "1.0.0"},
+    "directive_id": {"type": "string", "minLength": 1},
     "status": {
       "type": "string",
-      "enum": [
-        "directive_received",
-        "directive_received_and_project_adopted"
-      ]
+      "enum": ["directive_received", "directive_received_and_project_adopted"]
     },
-    "activation_policy": {
-      "type": "string",
-      "minLength": 1
-    },
+    "activation_policy": {"type": "string", "minLength": 1},
     "subsystems": {
       "type": "array",
       "minItems": 1,
-      "items": {
-        "$ref": "#/$defs/SubsystemEntry"
-      }
+      "items": {"$ref": "#/$defs/SubsystemEntry"},
+      "uniqueItems": true
     }
   },
   "$defs": {
+    "EvidenceRecord": {
+      "type": "object",
+      "required": ["timestamp", "test_harness_id", "sha256_digest"],
+      "additionalProperties": false,
+      "properties": {
+        "timestamp": {"type": "string", "format": "date-time"},
+        "test_harness_id": {"type": "string", "minLength": 1},
+        "sha256_digest": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$",
+          "description": "SHA-256 digest of the documented test evidence bytes. If JCS is used, hash the UTF-8 bytes of the JCS-canonicalized evidence object; this schema cannot calculate or verify the digest."
+        },
+        "jcs_canonicalized": {"type": "boolean"},
+        "notes": {"type": "string"}
+      }
+    },
     "SubsystemEntry": {
       "type": "object",
       "required": [
@@ -52,63 +55,52 @@
         "connection_status",
         "capability_status",
         "execution_status",
-        "runtime_activation"
+        "runtime_activation",
+        "verification_status",
+        "evidence_ledger"
       ],
       "additionalProperties": false,
       "properties": {
-        "subsystem_id": {
-          "type": "string",
-          "minLength": 1
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "directive_received": {
-          "type": "boolean"
-        },
-        "operating_principles_adopted": {
-          "type": "boolean"
-        },
+        "subsystem_id": {"type": "string", "minLength": 1},
+        "name": {"type": "string", "minLength": 1},
+        "directive_received": {"type": "boolean"},
+        "operating_principles_adopted": {"type": "boolean"},
         "project_state": {
           "type": "string",
-          "enum": [
-            "active_architecture",
-            "inactive",
-            "degraded",
-            "offline"
-          ]
+          "enum": ["active_architecture", "inactive", "degraded", "offline"]
         },
         "connection_status": {
           "type": "string",
-          "enum": [
-            "not_confirmed",
-            "connected",
-            "limited",
-            "failed"
-          ]
+          "enum": ["not_confirmed", "connected", "limited", "failed"]
         },
-        "capability_status": {
-          "type": "string",
-          "minLength": 1
-        },
+        "capability_status": {"type": "string", "minLength": 1},
         "execution_status": {
           "type": "string",
-          "enum": [
-            "project_level_work_only",
-            "partial_execution",
-            "confirmed_execution"
-          ]
+          "enum": ["project_level_work_only", "partial_execution", "confirmed_execution"]
         },
         "runtime_activation": {
           "type": "string",
-          "enum": [
-            "pending_confirmation",
-            "partial",
-            "confirmed"
-          ]
+          "enum": ["pending_confirmation", "partial", "confirmed"]
+        },
+        "verification_status": {
+          "type": "string",
+          "enum": ["PENDING_TEST", "EMPIRICALLY_TESTED", "VERIFIED", "FAILED"]
+        },
+        "evidence_ledger": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/EvidenceRecord"}
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"verification_status": {"enum": ["EMPIRICALLY_TESTED", "VERIFIED", "FAILED"]}}, "required": ["verification_status"]},
+          "then": {"properties": {"evidence_ledger": {"minItems": 1}}}
+        },
+        {
+          "if": {"properties": {"verification_status": {"const": "VERIFIED"}}, "required": ["verification_status"]},
+          "then": {"properties": {"evidence_ledger": {"contains": {"properties": {"jcs_canonicalized": {"const": true}}, "required": ["jcs_canonicalized"]}}}}
+        }
+      ]
     }
   }
 }

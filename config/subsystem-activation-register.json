@@ -13,7 +13,9 @@
       "connection_status": "not_confirmed",
       "capability_status": "documented_and_ready_for_independent_work",
       "execution_status": "project_level_work_only",
-      "runtime_activation": "pending_confirmation"
+      "runtime_activation": "pending_confirmation",
+      "verification_status": "PENDING_TEST",
+      "evidence_ledger": []
     },
     {
       "subsystem_id": "twelve_family_interstellar_archive",
@@ -24,7 +26,9 @@
       "connection_status": "not_confirmed",
       "capability_status": "documented_and_ready_for_independent_work",
       "execution_status": "project_level_work_only",
-      "runtime_activation": "pending_confirmation"
+      "runtime_activation": "pending_confirmation",
+      "verification_status": "PENDING_TEST",
+      "evidence_ledger": []
     },
     {
       "subsystem_id": "calendar_concordance",
@@ -35,7 +39,9 @@
       "connection_status": "not_confirmed",
       "capability_status": "documented_and_ready_for_independent_work",
       "execution_status": "project_level_work_only",
-      "runtime_activation": "pending_confirmation"
+      "runtime_activation": "pending_confirmation",
+      "verification_status": "PENDING_TEST",
+      "evidence_ledger": []
     },
     {
       "subsystem_id": "hermes_data_plane",
@@ -46,7 +52,9 @@
       "connection_status": "not_confirmed",
       "capability_status": "documented_and_ready_for_independent_work",
       "execution_status": "project_level_work_only",
-      "runtime_activation": "pending_confirmation"
+      "runtime_activation": "pending_confirmation",
+      "verification_status": "PENDING_TEST",
+      "evidence_ledger": []
     },
     {
       "subsystem_id": "drsa_cosmic_calibration_analysis",
@@ -57,7 +65,9 @@
       "connection_status": "not_confirmed",
       "capability_status": "documented_and_ready_for_independent_work",
       "execution_status": "project_level_work_only",
-      "runtime_activation": "pending_confirmation"
+      "runtime_activation": "pending_confirmation",
+      "verification_status": "PENDING_TEST",
+      "evidence_ledger": []
     },
     {
       "subsystem_id": "musical_sonification_engine",
@@ -68,7 +78,9 @@
       "connection_status": "not_confirmed",
       "capability_status": "documented_and_ready_for_independent_work",
       "execution_status": "project_level_work_only",
-      "runtime_activation": "pending_confirmation"
+      "runtime_activation": "pending_confirmation",
+      "verification_status": "PENDING_TEST",
+      "evidence_ledger": []
     },
     {
       "subsystem_id": "reboot_composition_system",
@@ -79,7 +91,9 @@
       "connection_status": "not_confirmed",
       "capability_status": "documented_and_ready_for_independent_work",
       "execution_status": "project_level_work_only",
-      "runtime_activation": "pending_confirmation"
+      "runtime_activation": "pending_confirmation",
+      "verification_status": "PENDING_TEST",
+      "evidence_ledger": []
     },
     {
       "subsystem_id": "validation_and_fred",
@@ -90,7 +104,9 @@
       "connection_status": "not_confirmed",
       "capability_status": "documented_and_ready_for_independent_work",
       "execution_status": "project_level_work_only",
-      "runtime_activation": "pending_confirmation"
+      "runtime_activation": "pending_confirmation",
+      "verification_status": "PENDING_TEST",
+      "evidence_ledger": []
     },
     {
       "subsystem_id": "repository_and_archive_infrastructure",
@@ -101,7 +117,9 @@
       "connection_status": "not_confirmed",
       "capability_status": "documented_and_ready_for_independent_work",
       "execution_status": "project_level_work_only",
-      "runtime_activation": "pending_confirmation"
+      "runtime_activation": "pending_confirmation",
+      "verification_status": "PENDING_TEST",
+      "evidence_ledger": []
     }
   ]
 }
